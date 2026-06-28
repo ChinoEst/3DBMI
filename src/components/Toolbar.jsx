@@ -58,6 +58,8 @@ const styles = {
   }
 }
 
+
+//React function 開頭必須大寫, return JSX (<div>...</div>)
 function ToolBtn({ label, icon, active, onClick, variant, title }) {
   const s = {
     ...styles.btn,

@@ -97,10 +97,13 @@ const s = {
   }
 }
 
+
 export default function ObjectPanel({ objects, selectedId, onSelect }) {
+  //map to dict, filter by type, render list
   const ifcObjs = [...objects.entries()].filter(([, o]) => o.type === 'ifc')
   const glbObjs = [...objects.entries()].filter(([, o]) => o.type === 'glb')
 
+  
   const renderItem = ([id, obj]) => {
     const isActive = id === selectedId
     const icon = obj.type === 'ifc' ? '🏗' : '🧊'

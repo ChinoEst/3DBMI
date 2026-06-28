@@ -1,4 +1,4 @@
-import * as THREE from 'three'
+﻿import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
@@ -91,7 +91,8 @@ export class SceneManager {
     this.transformControls.addEventListener('dragging-changed', (e) => {
       this.orbitControls.enabled = !e.value
     })
-    this.scene.add(this.transformControls)
+    const tcHelper = this.transformControls.getHelper()
+    this.scene.add(tcHelper)
     this._transformMode = 'translate'
   }
 
@@ -174,7 +175,8 @@ export class SceneManager {
     const allMeshes = []
     meshes.forEach(m => m.traverse(c => { if (c.isMesh) allMeshes.push(c) }))
 
-    const hits = this.raycaster.intersectObjects(allMeshes, false)
+    let hits = []
+    try { hits = this.raycaster.intersectObjects(allMeshes, false) } catch(e) { return }
     if (hits.length === 0) { this.deselect(); return }
 
     // Find the top-level registered object
@@ -383,3 +385,6 @@ export class SceneManager {
     this.transformControls.dispose()
   }
 }
+
+
+
