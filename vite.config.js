@@ -6,10 +6,17 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['web-ifc', 'web-ifc-three']
   },
+  worker: {
+    format: 'es'
+  },
   server: {
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'require-corp'
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Resource-Policy': 'cross-origin'
     }
+  },
+  build: {
+    target: 'esnext'
   }
 })

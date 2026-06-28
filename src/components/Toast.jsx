@@ -57,7 +57,7 @@ export function ToastContainer({ toasts }) {
           <span style={{ color: 'var(--text-primary)', fontSize: 13 }}>{t.message}</span>
         </div>
       ))}
-      // Add keyframes for fadeIn animation
+      
       <style>{`@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }`}</style>
     </div>
   )
