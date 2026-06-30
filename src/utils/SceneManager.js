@@ -136,6 +136,32 @@ export class SceneManager {
       const tcHelper = this.transformControls.getHelper()
       this.scene.add(tcHelper)
       this._transformMode = 'translate'
+      this._cameraMode = 'fly'
+      this.orbitControls.enabled = false
+      this._flyKeys = { w: false, a: false, s: false, d: false, q: false, e: false }
+      this._isRightDragging = false
+      this._flySpeed = 10
+      this._lookSpeed = 0.0025
+      this._euler = new THREE.Euler(0, 0, 0, 'YXZ')
+      this._euler.setFromQuaternion(this.camera.quaternion)
+
+      this.renderer.domElement.addEventListener('contextmenu', (e) => e.preventDefault())
+
+      this.renderer.domElement.addEventListener('mousedown', (e) => {
+        if (e.button === 2 && this._cameraMode === 'fly') {
+          this._isRightDragging = true
+        }
+      })
+      window.addEventListener('mouseup', (e) => {
+        if (e.button === 2) this._isRightDragging = false
+      })
+      this.renderer.domElement.addEventListener('mousemove', (e) => {
+        if (!this._isRightDragging || this._cameraMode !== 'fly') return
+        this._euler.y -= e.movementX * this._lookSpeed
+        this._euler.x -= e.movementY * this._lookSpeed
+        this._euler.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this._euler.x))
+        this.camera.quaternion.setFromEuler(this._euler)
+      })
     } catch (error) {
       console.error(error)
       throw error
@@ -202,9 +228,28 @@ export class SceneManager {
   //keep runing
   _startLoop() {
     try {
+      const clock = new THREE.Clock()
       const animate = () => {
         this._animId = requestAnimationFrame(animate)
-        this.orbitControls.update()
+        const delta = clock.getDelta()
+
+        if (this._cameraMode === 'fly') {
+          const moveSpeed = this._flySpeed * delta
+          const forward = new THREE.Vector3()
+          this.camera.getWorldDirection(forward)
+          const right = new THREE.Vector3()
+          right.crossVectors(forward, this.camera.up).normalize()
+
+          if (this._flyKeys.w) this.camera.position.addScaledVector(forward, moveSpeed)
+          if (this._flyKeys.s) this.camera.position.addScaledVector(forward, -moveSpeed)
+          if (this._flyKeys.d) this.camera.position.addScaledVector(right, moveSpeed)
+          if (this._flyKeys.a) this.camera.position.addScaledVector(right, -moveSpeed)
+          if (this._flyKeys.e) this.camera.position.y += moveSpeed
+          if (this._flyKeys.q) this.camera.position.y -= moveSpeed
+        } else {
+          this.orbitControls.update()
+        }
+
         this.renderer.render(this.scene, this.camera)
       }
       animate()
@@ -243,9 +288,9 @@ export class SceneManager {
       try {
         if (e.target.tagName === 'INPUT') return
         switch (e.key) {
-          case 'w': case 'W': this.setTransformMode('translate'); break
-          case 'e': case 'E': this.setTransformMode('rotate'); break
-          case 'r': case 'R': this.setTransformMode('scale'); break
+          case 'z': case 'Z': this.setTransformMode('translate'); break
+          case 'x': case 'X': this.setTransformMode('rotate'); break
+          case 'c': case 'C': this.setTransformMode('scale'); break
           case 'Escape': this.deselect(); break
           case 'Delete': case 'Backspace':
             if (this.selectedObject) {
@@ -253,9 +298,26 @@ export class SceneManager {
               if (id) this.removeObject(id)
             }
             break
+          case 'w': case 'W': this._flyKeys.w = true; break
+          case 'a': case 'A': this._flyKeys.a = true; break
+          case 's': case 'S': this._flyKeys.s = true; break
+          case 'd': case 'D': this._flyKeys.d = true; break
+          case 'q': case 'Q': this._flyKeys.q = true; break
+          case 'e': case 'E': this._flyKeys.e = true; break
         }
       } catch (error) {
         console.error(error)
+      }
+    }
+
+    this._onKeyUp = (e) => {
+      switch (e.key) {
+        case 'w': case 'W': this._flyKeys.w = false; break
+        case 'a': case 'A': this._flyKeys.a = false; break
+        case 's': case 'S': this._flyKeys.s = false; break
+        case 'd': case 'D': this._flyKeys.d = false; break
+        case 'q': case 'Q': this._flyKeys.q = false; break
+        case 'e': case 'E': this._flyKeys.e = false; break
       }
     }
     /*
@@ -264,6 +326,7 @@ export class SceneManager {
     */
     //when keydown, do this._onKey and parameter is e for keyboard reaction
     window.addEventListener('keydown', this._onKey)
+    window.addEventListener('keyup', this._onKeyUp)
   }
 
 
@@ -383,6 +446,28 @@ export class SceneManager {
     try {
       this._transformMode = mode
       this.transformControls.setMode(mode)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+
+  toggleCameraMode() {
+    try {
+      if (this._cameraMode === 'orbit') {
+        this._cameraMode = 'fly'
+        this.orbitControls.enabled = false
+        this._euler.setFromQuaternion(this.camera.quaternion)
+      } else {
+        this._cameraMode = 'orbit'
+        this.orbitControls.enabled = true
+        this.orbitControls.target.copy(
+          this.camera.position.clone().add(
+            new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion).multiplyScalar(10)
+          )
+        )
+      }
+      return this._cameraMode
     } catch (error) {
       console.error(error)
     }
@@ -588,6 +673,8 @@ export class SceneManager {
       this.renderer.dispose()
       this.orbitControls.dispose()
       this.transformControls.dispose()
+      window.removeEventListener('keydown', this._onKey)
+      window.removeEventListener('keyup', this._onKeyUp)
     } catch (error) {
       console.error(error)
     }

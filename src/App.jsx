@@ -201,13 +201,19 @@ export default function App() {
     }
   }
 
-  // === 重置視角 ===
+  // reset cemera view
   const handleFitView = () => {
     try {
       sceneRef.current?.fitToScene()
     } catch (err) {
       console.error(err)
     }
+  }
+
+  // cemera move
+  const handleCemera = () => {
+    const mode = sceneRef.current?.toggleCameraMode()
+    toast(`相機模式：${mode === 'fly' ? '自由視角' : '環繞模式'}`, 'info')
   }
 
   return (
@@ -226,6 +232,7 @@ export default function App() {
         onOpenGLB={handleOpenGLB}
         onSave={handleSave}
         onLoad={handleLoadProject}
+        onCemera={handleCemera}
         onFitView={handleFitView}
         onDeleteSelected={handleDelete}
         hasSelection={!!selectedId}

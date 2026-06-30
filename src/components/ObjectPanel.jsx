@@ -148,9 +148,15 @@ export default function ObjectPanel({ objects, selectedId, onSelect }) {
       <div style={s.infoBox}>
         <div style={{ marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>快捷鍵</div>
         {[
-          ['W', '位移'],
-          ['E', '旋轉'],
+          ['Z', '位移'],
+          ['X', '旋轉'],
           ['R', '縮放'],
+          ['W', '前進'],
+          ['A', '左移'],
+          ['S', '後退'],
+          ['D', '右移'],
+          ['Q', '上升'],
+          ['E', '下降'],
           ['Esc', '取消選取'],
           ['Del', '刪除'],
           ['Ctrl+S', '儲存'],

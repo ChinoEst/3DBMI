@@ -82,6 +82,7 @@ export default function Toolbar({
   onOpenGLB,
   onSave,
   onLoad,
+  onCemera,
   onFitView,
   onDeleteSelected,
   hasSelection
