@@ -31,12 +31,16 @@ export default function App() {
   // 初始化 Three.js 場景，只在元件第一次掛載時建立一次。
   useEffect(() => {
     if (!canvasRef.current || sceneRef.current) return
-    const sm = new SceneManager(canvasRef.current)
-    //sm.on_select = lambda id: set_selected_id(id) in py
-    sm.onSelect = (id) => setSelectedId(id)
-    sm.onDeselect = () => setSelectedId(null)
-    sceneRef.current = sm
-    return () => { sm.destroy(); sceneRef.current = null }
+    try {
+      const sm = new SceneManager(canvasRef.current)
+      //sm.on_select = lambda id: set_selected_id(id) in py
+      sm.onSelect = (id) => setSelectedId(id)
+      sm.onDeselect = () => setSelectedId(null)
+      sceneRef.current = sm
+      return () => { sm.destroy(); sceneRef.current = null }
+    } catch (err) {
+      console.error(err)
+    }
   }, [])
 
   // 監聽 Ctrl/Cmd + S，讓使用者可以快速儲存專案。
@@ -92,37 +96,55 @@ export default function App() {
 
   // === 變換模式切換 ===
   const handleTransformMode = (mode) => {
-    setTransformMode(mode)
-    sceneRef.current?.setTransformMode(mode)
+    try {
+      setTransformMode(mode)
+      sceneRef.current?.setTransformMode(mode)
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   // === 從物件面板選取物件 ===
   const handlePanelSelect = (id) => {
-    sceneRef.current?.selectById(id)
-    setSelectedId(id)
+    try {
+      sceneRef.current?.selectById(id)
+      setSelectedId(id)
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   // === 刪除已選取物件 ===
   const handleDelete = () => {
-    if (!selectedId || !sceneRef.current) return
-    sceneRef.current.removeObject(selectedId)
-    setSelectedId(null)
-    syncObjects()
-    toast('物件已刪除', 'info')
+    try {
+      if (!selectedId || !sceneRef.current) return
+      sceneRef.current.removeObject(selectedId)
+      setSelectedId(null)
+      syncObjects()
+      toast('物件已刪除', 'info')
+    } catch (err) {
+      console.error(err)
+      toast('刪除物件失敗', 'error')
+    }
   }
 
   // === 儲存專案 ===
   const handleSave = () => {
-    if (!sceneRef.current) return
-    const data = sceneRef.current.exportProjectFull()
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `bim-project-${Date.now()}.json`
-    a.click()
-    URL.revokeObjectURL(url)
-    toast('專案已儲存', 'success')
+    try {
+      if (!sceneRef.current) return
+      const data = sceneRef.current.exportProjectFull()
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `bim-project-${Date.now()}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+      toast('專案已儲存', 'success')
+    } catch (err) {
+      console.error(err)
+      toast('專案儲存失敗', 'error')
+    }
   }
 
   // === 載入專案檔 ===
@@ -130,10 +152,17 @@ export default function App() {
 
   const handleProjectFile = async (file) => {
     try {
-      // TODO: 之後改成彈出對話框詢問使用者是否要儲存目前場景
       if (sceneRef.current.objects.size > 0) {
+        const wantSave = confirm('是否要先儲存目前場景？')
+        if (wantSave) {
+          handleSave()
+        } else {
+          const confirmDiscard = confirm('確定要放棄目前場景並載入新專案嗎？')
+          if (!confirmDiscard) return
+        }
         sceneRef.current.clearAll()
       }
+
 
       const text = await file.text()
       const data = JSON.parse(text)
@@ -159,16 +188,27 @@ export default function App() {
   // === 拖曳匯入檔案 ===
   const handleFileDrop = (files) => {
     for (const file of files) {
-      const ext = file.name.split('.').pop().toLowerCase()
-      if (ext === 'ifc') handleIFCFile(file)
-      else if (ext === 'glb' || ext === 'gltf') handleGLBFile(file)
-      else if (ext === 'json') handleProjectFile(file)
-      else toast(`不支援的格式：.${ext}`, 'warn')
+      try {
+        const ext = file.name.split('.').pop().toLowerCase()
+        if (ext === 'ifc') handleIFCFile(file)
+        else if (ext === 'glb' || ext === 'gltf') handleGLBFile(file)
+        else if (ext === 'json') handleProjectFile(file)
+        else toast(`不支援的格式：.${ext}`, 'warn')
+      } catch (err) {
+        console.error(err)
+        toast(`處理檔案失敗：${file.name}`, 'error')
+      }
     }
   }
 
   // === 重置視角 ===
-  const handleFitView = () => sceneRef.current?.fitToScene()
+  const handleFitView = () => {
+    try {
+      sceneRef.current?.fitToScene()
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>

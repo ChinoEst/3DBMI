@@ -46,163 +46,216 @@ export class SceneManager {
   }
 
   _initRenderer() {
-    this.renderer = new THREE.WebGLRenderer({
-      canvas: this.canvas,
-      antialias: true,
-      alpha: false
-    })
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-    this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight)
-    this.renderer.shadowMap.enabled = true
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
-    this.renderer.outputColorSpace = THREE.SRGBColorSpace
-    this.renderer.toneMapping = THREE.ACESFilmicToneMapping
-    this.renderer.toneMappingExposure = 1.2
+    try {
+      this.renderer = new THREE.WebGLRenderer({
+        canvas: this.canvas,
+        antialias: true,
+        alpha: false
+      })
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+      this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight)
+      this.renderer.shadowMap.enabled = true
+      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
+      this.renderer.outputColorSpace = THREE.SRGBColorSpace
+      this.renderer.toneMapping = THREE.ACESFilmicToneMapping
+      this.renderer.toneMappingExposure = 1.2
+    } catch (error) {
+      console.error(error)
+      throw error
+    }
   }
 
   _initScene() {
-    this.scene = new THREE.Scene()
-    this.scene.background = new THREE.Color(0x0f1117)
-    this.scene.fog = new THREE.FogExp2(0x0f1117, 0.002)
+    try {
+      this.scene = new THREE.Scene()
+      this.scene.background = new THREE.Color(0x0f1117)
+      this.scene.fog = new THREE.FogExp2(0x0f1117, 0.002)
 
-    // Grid
-    const grid = new THREE.GridHelper(200, 80, 0x1e2235, 0x1a1d27)
-    grid.position.y = -0.01
-    this.scene.add(grid)
+      // Grid
+      const grid = new THREE.GridHelper(200, 80, 0x1e2235, 0x1a1d27)
+      grid.position.y = -0.01
+      this.scene.add(grid)
+    } catch (error) {
+      console.error(error)
+      throw error
+    }
   }
 
   _initCamera() {
-    const w = this.canvas.clientWidth
-    const h = this.canvas.clientHeight
-    this.camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 5000)
-    this.camera.position.set(20, 15, 30)
-    this.camera.lookAt(0, 0, 0)
+    try {
+      const w = this.canvas.clientWidth
+      const h = this.canvas.clientHeight
+      this.camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 5000)
+      this.camera.position.set(20, 15, 30)
+      this.camera.lookAt(0, 0, 0)
+    } catch (error) {
+      console.error(error)
+      throw error
+    }
   }
 
   _initLights() {
-    const ambient = new THREE.AmbientLight(0xffffff, 0.6)
-    this.scene.add(ambient)
+    try {
+      const ambient = new THREE.AmbientLight(0xffffff, 0.6)
+      this.scene.add(ambient)
 
-    const sun = new THREE.DirectionalLight(0xfff4e0, 2.0)
-    sun.position.set(40, 80, 40)
-    sun.castShadow = true
-    sun.shadow.mapSize.setScalar(2048)
-    sun.shadow.camera.near = 1
-    sun.shadow.camera.far = 500
-    sun.shadow.camera.left = -100
-    sun.shadow.camera.right = 100
-    sun.shadow.camera.top = 100
-    sun.shadow.camera.bottom = -100
-    this.scene.add(sun)
+      const sun = new THREE.DirectionalLight(0xfff4e0, 2.0)
+      sun.position.set(40, 80, 40)
+      sun.castShadow = true
+      sun.shadow.mapSize.setScalar(2048)
+      sun.shadow.camera.near = 1
+      sun.shadow.camera.far = 500
+      sun.shadow.camera.left = -100
+      sun.shadow.camera.right = 100
+      sun.shadow.camera.top = 100
+      sun.shadow.camera.bottom = -100
+      this.scene.add(sun)
 
-    const fill = new THREE.DirectionalLight(0xc8d8ff, 0.5)
-    fill.position.set(-30, 20, -20)
-    this.scene.add(fill)
+      const fill = new THREE.DirectionalLight(0xc8d8ff, 0.5)
+      fill.position.set(-30, 20, -20)
+      this.scene.add(fill)
+    } catch (error) {
+      console.error(error)
+      throw error
+    }
   }
 
   _initControls() {
-    this.orbitControls = new OrbitControls(this.camera, this.renderer.domElement)
-    this.orbitControls.enableDamping = true
-    this.orbitControls.dampingFactor = 0.08
-    this.orbitControls.minDistance = 0.5
-    this.orbitControls.maxDistance = 2000
-    this.orbitControls.maxPolarAngle = Math.PI / 2 + 0.2
+    try {
+      this.orbitControls = new OrbitControls(this.camera, this.renderer.domElement)
+      this.orbitControls.enableDamping = true
+      this.orbitControls.dampingFactor = 0.08
+      this.orbitControls.minDistance = 0.5
+      this.orbitControls.maxDistance = 2000
+      this.orbitControls.maxPolarAngle = Math.PI / 2 + 0.2
 
-    this.transformControls = new TransformControls(this.camera, this.renderer.domElement)
-    this.transformControls.addEventListener('dragging-changed', (e) => {
-      this.orbitControls.enabled = !e.value
-    })
-    const tcHelper = this.transformControls.getHelper()
-    this.scene.add(tcHelper)
-    this._transformMode = 'translate'
+      this.transformControls = new TransformControls(this.camera, this.renderer.domElement)
+      this.transformControls.addEventListener('dragging-changed', (e) => {
+        this.orbitControls.enabled = !e.value
+      })
+      const tcHelper = this.transformControls.getHelper()
+      this.scene.add(tcHelper)
+      this._transformMode = 'translate'
+    } catch (error) {
+      console.error(error)
+      throw error
+    }
   }
 
   _initRaycaster() {
-    this.raycaster = new THREE.Raycaster()
-    this.raycaster.params.InstancedMesh = { threshold: 0 }
-    this.raycaster.params.Mesh.threshold = 0
-    this.mouse = new THREE.Vector2()
-    this._isDraggingTransform = false
+    try {
+      this.raycaster = new THREE.Raycaster()
+      this.raycaster.params.InstancedMesh = { threshold: 0 }
+      this.raycaster.params.Mesh.threshold = 0
+      this.mouse = new THREE.Vector2()
+      this._isDraggingTransform = false
 
-    this.transformControls.addEventListener('dragging-changed', (e) => {
-      this.orbitControls.enabled = !e.value
-      if (e.value) {
-        this._isDraggingTransform = true
-      } else {
-        setTimeout(() => { this._isDraggingTransform = false }, 50)
-        const frags = getFragments()
-        frags.update(true)
-      }
-    })
-    this.transformControls.addEventListener('objectChange', () => {
-      if (this._updateScheduled) return
-      this._updateScheduled = true
-      requestAnimationFrame(() => {
-        const frags = getFragments()
-        frags.update(true)
-        this._updateScheduled = false
+      this.transformControls.addEventListener('dragging-changed', (e) => {
+        this.orbitControls.enabled = !e.value
+        if (e.value) {
+          this._isDraggingTransform = true
+        } else {
+          //delay for 50ms for Race condition
+          setTimeout(() => { this._isDraggingTransform = false }, 50)
+          const frags = getFragments()
+          frags.update(true)
+        }
       })
-    })
+      this.transformControls.addEventListener('objectChange', () => {
+        if (this._updateScheduled) return
+        this._updateScheduled = true
+        requestAnimationFrame(() => {
+          const frags = getFragments()
+          frags.update(true)
+          this._updateScheduled = false
+        })
+      })
 
-    this.renderer.domElement.addEventListener('click', (e) => {
-      if (this._isDraggingTransform) return
-      this._handleClick(e)
-    })
+      this.renderer.domElement.addEventListener('click', (e) => {
+        if (this._isDraggingTransform) return
+        this._handleClick(e)
+      })
+    } catch (error) {
+      console.error(error)
+      throw error
+    }
   }
 
   _initHighlight() {
-    this._originalMaterials = new Map()
-    this._highlightMaterial = new THREE.MeshStandardMaterial({
-      color: 0x4f8ef7,
-      emissive: 0x1a3a7a,
-      emissiveIntensity: 0.4,
-      metalness: 0.1,
-      roughness: 0.4,
-      transparent: true,
-      opacity: 0.85
-    })
+    try {
+      this._originalMaterials = new Map()
+      this._highlightMaterial = new THREE.MeshStandardMaterial({
+        color: 0x4f8ef7,
+        emissive: 0x1a3a7a,
+        emissiveIntensity: 0.4,
+        metalness: 0.1,
+        roughness: 0.4,
+        transparent: true,
+        opacity: 0.85
+      })
+    } catch (error) {
+      console.error(error)
+      throw error
+    }
   }
 
   //keep runing
   _startLoop() {
-    const animate = () => {
-      this._animId = requestAnimationFrame(animate)
-      this.orbitControls.update()
-      this.renderer.render(this.scene, this.camera)
+    try {
+      const animate = () => {
+        this._animId = requestAnimationFrame(animate)
+        this.orbitControls.update()
+        this.renderer.render(this.scene, this.camera)
+      }
+      animate()
+    } catch (error) {
+      console.error(error)
+      throw error
     }
-    animate()
   }
  
   //listener : on bind resize
   _bindResize() {
-    this._resizeObs = new ResizeObserver(() => this._onResize())
-    this._resizeObs.observe(this.canvas.parentElement)
+    try {
+      this._resizeObs = new ResizeObserver(() => this._onResize())
+      this._resizeObs.observe(this.canvas.parentElement)
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   //dynamic resize canvas by bund size
   _onResize() {
-    const w = this.canvas.clientWidth
-    const h = this.canvas.clientHeight
-    this.camera.aspect = w / h
-    this.camera.updateProjectionMatrix()
-    this.renderer.setSize(w, h)
+    try {
+      const w = this.canvas.clientWidth
+      const h = this.canvas.clientHeight
+      this.camera.aspect = w / h
+      this.camera.updateProjectionMatrix()
+      this.renderer.setSize(w, h)
+    } catch (error) {
+      console.error(error)
+    }
   }
 
 
   _bindKeyboard() {
     this._onKey = (e) => {
-      if (e.target.tagName === 'INPUT') return
-      switch (e.key) {
-        case 'w': case 'W': this.setTransformMode('translate'); break
-        case 'e': case 'E': this.setTransformMode('rotate'); break
-        case 'r': case 'R': this.setTransformMode('scale'); break
-        case 'Escape': this.deselect(); break
-        case 'Delete': case 'Backspace':
-          if (this.selectedObject) {
-            const id = this._getIdByMesh(this.selectedObject)
-            if (id) this.removeObject(id)
-          }
-          break
+      try {
+        if (e.target.tagName === 'INPUT') return
+        switch (e.key) {
+          case 'w': case 'W': this.setTransformMode('translate'); break
+          case 'e': case 'E': this.setTransformMode('rotate'); break
+          case 'r': case 'R': this.setTransformMode('scale'); break
+          case 'Escape': this.deselect(); break
+          case 'Delete': case 'Backspace':
+            if (this.selectedObject) {
+              const id = this._getIdByMesh(this.selectedObject)
+              if (id) this.removeObject(id)
+            }
+            break
+        }
+      } catch (error) {
+        console.error(error)
       }
     }
     /*
@@ -215,58 +268,65 @@ export class SceneManager {
 
 
   async _handleClick(e) {
-    const rect = this.renderer.domElement.getBoundingClientRect()
-    this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1
-    this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1
-    this.raycaster.setFromCamera(this.mouse, this.camera)
+    try {
+      const rect = this.renderer.domElement.getBoundingClientRect()
+      //mouse coordinate: transfer to canvas; 
+      this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1
+      this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1
+      //line from camera extend to mouse
+      this.raycaster.setFromCamera(this.mouse, this.camera)
 
-    let bestId = null
-    let bestDist = Infinity
+      let bestId = null
+      let bestDist = Infinity
 
-    // IFC 用自己的 raycast
-    for (const [id, obj] of this.objects.entries()) {
-      if (obj.type === 'ifc' && obj.model) {
-        const result = await obj.model.raycast({
-          mouse: new THREE.Vector2(e.clientX, e.clientY),
-          dom: this.renderer.domElement,
-          camera: this.camera
-        })
-        if (result && result.distance < bestDist) {
-          bestDist = result.distance
-          bestId = id
+      //IFC doesn't suppose Three.js, use itself
+      for (const [id, obj] of this.objects.entries()) {
+        if (obj.type === 'ifc' && obj.model) {
+          const result = await obj.model.raycast({
+            mouse: new THREE.Vector2(e.clientX, e.clientY),
+            dom: this.renderer.domElement,
+            camera: this.camera
+          })
+          if (result && result.distance < bestDist) {
+            bestDist = result.distance
+            bestId = id
+          }
         }
       }
-    }
 
-    // GLB 用 Three.js 原生 raycaster，只收 GLB 的 mesh
-    const allMeshes = []
-    for (const [id, obj] of this.objects.entries()) {
-      if (obj.type !== 'glb') continue
-      obj.mesh.traverse(c => {
-        if (c && c.type === 'Mesh') allMeshes.push(c)
-      })
-    }
-
-    let hits = []
-    try { hits = this.raycaster.intersectObjects(allMeshes, false) } catch (e) { hits = [] }
-
-    if (hits.length > 0 && hits[0].distance < bestDist) {
-      let target = hits[0].object
-      let found = null
-      while (target) {
-        const id = this._getIdByMesh(target)
-        if (id) { found = id; break }
-        target = target.parent
+      // GLB use raycaster of Three.js，filter mesh from others
+      const allMeshes = []
+      for (const [id, obj] of this.objects.entries()) {
+        if (obj.type !== 'glb') continue
+        obj.mesh.traverse(c => {
+          if (c && c.type === 'Mesh') allMeshes.push(c)
+        })
       }
-      if (found) {
-        bestId = found
-        bestDist = hits[0].distance
-      }
-    }
 
-    if (bestId) this.selectById(bestId)
-    else this.deselect()
+      let hits = []
+      try { hits = this.raycaster.intersectObjects(allMeshes, false) } catch (e) { hits = [] }
+
+      if (hits.length > 0 && hits[0].distance < bestDist) {
+        let target = hits[0].object
+        let found = null
+        while (target) {
+          const id = this._getIdByMesh(target)
+          if (id) { found = id; break }
+          target = target.parent
+        }
+        if (found) {
+          bestId = found
+          bestDist = hits[0].distance
+        }
+      }
+
+      if (bestId) this.selectById(bestId)
+      else this.deselect()
+    } catch (error) {
+      console.error(error)
+    }
   }
+
   _getIdByMesh(mesh) {
     for (const [id, obj] of this.objects.entries()) {
       if (obj.mesh === mesh) return id
@@ -274,233 +334,263 @@ export class SceneManager {
     return null
   }
 
-  selectById(id) {
-    this.deselect()
-    const obj = this.objects.get(id)
-    if (!obj) return
-    this.selectedObject = obj.mesh
 
-    //selection all mesh
-    obj.mesh.traverse(c => {
-      if (c.isMesh) {
-        //save origin
-        this._originalMaterials.set(c.uuid, c.material)
-        //change to Highlight
-        c.material = this._highlightMaterial
-      }
-    })
-    console.log('selectById:', id, obj.mesh)
-    //transformControls follow  obj.mesh 
-    this.transformControls.attach(obj.mesh)
-    if (this.onSelect) this.onSelect(id, obj)
+  selectById(id) {
+    try {
+      this.deselect()
+      const obj = this.objects.get(id)
+      if (!obj) return
+      this.selectedObject = obj.mesh
+
+      //selection all mesh
+      obj.mesh.traverse(c => {
+        if (c.isMesh) {
+          //save origin
+          this._originalMaterials.set(c.uuid, c.material)
+          //change to Highlight
+          c.material = this._highlightMaterial
+        }
+      })
+
+      console.log('selectById:', id, obj.mesh)
+      //transformControls follow  obj.mesh 
+      this.transformControls.attach(obj.mesh)
+      if (this.onSelect) this.onSelect(id, obj)
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   deselect() {
-    if (!this.selectedObject) return
-    // Restore materials
-    this.selectedObject.traverse(c => {
-      if (c.isMesh && this._originalMaterials.has(c.uuid)) {
-        c.material = this._originalMaterials.get(c.uuid)
-        this._originalMaterials.delete(c.uuid)
-      }
-    })
-    this.transformControls.detach()
-    this.selectedObject = null
-    if (this.onDeselect) this.onDeselect()
+    try {
+      if (!this.selectedObject) return
+      // Restore materials
+      this.selectedObject.traverse(c => {
+        if (c.isMesh && this._originalMaterials.has(c.uuid)) {
+          c.material = this._originalMaterials.get(c.uuid)
+          this._originalMaterials.delete(c.uuid)
+        }
+      })
+      this.transformControls.detach()
+      this.selectedObject = null
+      if (this.onDeselect) this.onDeselect()
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   setTransformMode(mode) {
-    this._transformMode = mode
-    this.transformControls.setMode(mode)
+    try {
+      this._transformMode = mode
+      this.transformControls.setMode(mode)
+    } catch (error) {
+      console.error(error)
+    }
   }
 
-  // === IFC ===
+  
   addIFCModel({ object, model, fragmentBytes }, filename) {
-    const id = `ifc_${Date.now()}`
-    model.useCamera(this.camera)
-    this.scene.add(object)
-    this.objects.set(id, { mesh: object, model, fragmentBytes, type: 'ifc', name: filename })
-    return id
+    try {
+      const id = `ifc_${Date.now()}`
+      model.useCamera(this.camera)
+      this.scene.add(object)
+      this.objects.set(id, { mesh: object, model, fragmentBytes, type: 'ifc', name: filename })
+      return id
+    } catch (error) {
+      console.error(error)
+      throw error
+    }
 }
 
   // === GLB ===
   async loadGLB(file) {
-    const fileBuffer = await file.arrayBuffer()
-    return new Promise((resolve, reject) => {
-      const url = URL.createObjectURL(file)
-      const loader = new GLTFLoader()
-      //gltf callback
-      loader.load(url, (gltf) => {
-        URL.revokeObjectURL(url)
-        const model = gltf.scene
-        const id = `glb_${++this._glbCounter}_${Date.now()}`
-        model.traverse(c => {
-          if (c.isMesh) {
-            c.castShadow = true
-            c.receiveShadow = true
-          }
-        })
-        // Auto-center
-        const box = new THREE.Box3().setFromObject(model)
-        const center = box.getCenter(new THREE.Vector3())
-        model.position.sub(center)
-        model.position.y = 0
+    try {
+      const fileBuffer = await file.arrayBuffer()
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file)
+        const loader = new GLTFLoader()
+        //gltf callback
+        loader.load(url, (gltf) => {
+          try {
+            URL.revokeObjectURL(url)
+            const model = gltf.scene
+            const id = `glb_${++this._glbCounter}_${Date.now()}`
+            model.traverse(c => {
+              if (c.isMesh) {
+                c.castShadow = true
+                c.receiveShadow = true
+              }
+            })
+            // Auto-center
+            const box = new THREE.Box3().setFromObject(model)
+            const center = box.getCenter(new THREE.Vector3())
+            model.position.sub(center)
+            model.position.y = 0
 
-        this.scene.add(model)
-        this.objects.set(id, { mesh: model, fileBuffer, type: 'glb', name: file.name })
-        resolve(id)
-      }, undefined, reject)
-    })
+            this.scene.add(model)
+            this.objects.set(id, { mesh: model, fileBuffer, type: 'glb', name: file.name })
+            resolve(id)
+          } catch (error) {
+            console.error(error)
+            reject(error)
+          }
+        }, undefined, reject)
+      })
+    } catch (error) {
+      console.error(error)
+      throw error
+    }
   }
+
 
   removeObject(id) {
-    const obj = this.objects.get(id)
-    if (!obj) return
-    if (this.selectedObject === obj.mesh) this.deselect()
+    try {
+      const obj = this.objects.get(id)
+      if (!obj) return
+      if (this.selectedObject === obj.mesh) this.deselect()
 
-    if (obj.type === 'ifc' && obj.model) {
-      const frags = getFragments()
-      frags.disposeModel(obj.model.modelId)
-    } else {
-      this.scene.remove(obj.mesh)
-      obj.mesh.traverse(c => {
-        if (c.isMesh) {
-          c.geometry?.dispose()
-          if (Array.isArray(c.material)) c.material.forEach(m => m.dispose())
-          else c.material?.dispose()
-        }
-      })
+      if (obj.type === 'ifc' && obj.model) {
+        const frags = getFragments()
+        frags.disposeModel(obj.model.modelId)
+      } else {
+        this.scene.remove(obj.mesh)
+        obj.mesh.traverse(c => {
+          if (c.isMesh) {
+            c.geometry?.dispose()
+            if (Array.isArray(c.material)) c.material.forEach(m => m.dispose())
+            else c.material?.dispose()
+          }
+        })
+      }
+      
+      this.objects.delete(id)
+    } catch (error) {
+      console.error(error)
     }
-    
-    this.objects.delete(id)
   }
+
 
   clearAll() {
-    const ids = [...this.objects.keys()]
-    for (const id of ids) {
-      this.removeObject(id)
+    try {
+      const ids = [...this.objects.keys()]
+      for (const id of ids) {
+        this.removeObject(id)
+      }
+    } catch (error) {
+      console.error(error)
     }
   }
+
 
   // === Camera fit ===
   //auto adjust camera for view all object
   fitToScene() {
-    const meshes = [...this.objects.values()].map(o => o.mesh)
-    if (meshes.length === 0) return
-    //3d bbox
-    const box = new THREE.Box3()
-    meshes.forEach(m => box.expandByObject(m))
-    //box contain all mesh
-    if (box.isEmpty()) return
+    try {
+      const meshes = [...this.objects.values()].map(o => o.mesh)
+      if (meshes.length === 0) return
+      //3d bbox
+      const box = new THREE.Box3()
+      meshes.forEach(m => box.expandByObject(m))
+      //box contain all mesh
+      if (box.isEmpty()) return
 
-    const center = box.getCenter(new THREE.Vector3())
-    const size = box.getSize(new THREE.Vector3())
-    const maxDim = Math.max(size.x, size.y, size.z)
-    const fov = this.camera.fov * (Math.PI / 180)
-    let dist = maxDim / (2 * Math.tan(fov / 2))
-    dist *= 1.8
+      const center = box.getCenter(new THREE.Vector3())
+      const size = box.getSize(new THREE.Vector3())
+      const maxDim = Math.max(size.x, size.y, size.z)
+      const fov = this.camera.fov * (Math.PI / 180)
+      let dist = maxDim / (2 * Math.tan(fov / 2))
+      dist *= 1.8
 
-    this.orbitControls.target.copy(center)
-    this.camera.position.set(
-      center.x + dist * 0.6,
-      center.y + dist * 0.5,
-      center.z + dist * 0.8
-    )
-    this.camera.lookAt(center)
-    this.orbitControls.update()
+      this.orbitControls.target.copy(center)
+      this.camera.position.set(
+        center.x + dist * 0.6,
+        center.y + dist * 0.5,
+        center.z + dist * 0.8
+      )
+      this.camera.lookAt(center)
+      this.orbitControls.update()
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   // === Save / Load ===
   //output: .json
-  exportProject() {
-    const data = { version: 1, objects: [] }
-    for (const [id, obj] of this.objects.entries()) {
-      if (obj.type === 'ifc') continue // IFC geometry can't be serialized easily; skip transforms for now
-      const m = obj.mesh
-      data.objects.push({
-        id,
-        type: obj.type,
-        name: obj.name,
-        position: m.position.toArray(),
-        rotation: [m.rotation.x, m.rotation.y, m.rotation.z, m.rotation.order],
-        scale: m.scale.toArray()
-      })
-    }
-    return data
-  }
-
   exportProjectFull() {
-    const data = { version: 2, objects: [] }
-    for (const [id, obj] of this.objects.entries()) {
-      const m = obj.mesh
-      const entry = {
-        id,
-        type: obj.type,
-        name: obj.name,
-        position: m.position.toArray(),
-        rotation: [m.rotation.x, m.rotation.y, m.rotation.z, m.rotation.order],
-        scale: m.scale.toArray()
+    try {
+      const data = { version: 2, objects: [] }
+      for (const [id, obj] of this.objects.entries()) {
+        const m = obj.mesh
+        const entry = {
+          id,
+          type: obj.type,
+          name: obj.name,
+          position: m.position.toArray(),
+          rotation: [m.rotation.x, m.rotation.y, m.rotation.z, m.rotation.order],
+          scale: m.scale.toArray()
+        }
+        
+        if (obj.type === 'ifc' && obj.fragmentBytes) {
+          entry.fragmentData = arrayBufferToBase64(obj.fragmentBytes.buffer || obj.fragmentBytes)
+        }
+        if (obj.type === 'glb' && obj.fileBuffer) {
+          entry.fileData = arrayBufferToBase64(obj.fileBuffer)
+        }
+        
+        data.objects.push(entry)
       }
-      
-      if (obj.type === 'ifc' && obj.fragmentBytes) {
-        entry.fragmentData = arrayBufferToBase64(obj.fragmentBytes.buffer || obj.fragmentBytes)
-      }
-      if (obj.type === 'glb' && obj.fileBuffer) {
-        entry.fileData = arrayBufferToBase64(obj.fileBuffer)
-      }
-      
-      data.objects.push(entry)
+      return data
+    } catch (error) {
+      console.error(error)
+      throw error
     }
-    return data
   }
 
   //load project
-  applyProjectTransforms(data) {
-    if (!data?.objects) return
-    for (const saved of data.objects) {
-      const obj = [...this.objects.values()].find(o => o.name === saved.name && o.type === saved.type)
-      if (!obj) continue
-      obj.mesh.position.fromArray(saved.position)
-      obj.mesh.rotation.set(saved.rotation[0], saved.rotation[1], saved.rotation[2], saved.rotation[3])
-      obj.mesh.scale.fromArray(saved.scale)
-    }
-  }
-
   async loadProjectFull(data) {
-    if (!data?.objects) return
+    try {
+      if (!data?.objects) return
 
-    for (const saved of data.objects) {
-      if (saved.type === 'ifc' && saved.fragmentData) {
-        const buffer = base64ToArrayBuffer(saved.fragmentData)
-        const result = await loadFragmentBytes(new Uint8Array(buffer), saved.name)
-        const id = this.addIFCModel(result, saved.name)
-        const obj = this.objects.get(id)
-        obj.mesh.position.fromArray(saved.position)
-        obj.mesh.rotation.set(saved.rotation[0], saved.rotation[1], saved.rotation[2], saved.rotation[3])
-        obj.mesh.scale.fromArray(saved.scale)
-      }
+      for (const saved of data.objects) {
+        if (saved.type === 'ifc' && saved.fragmentData) {
+          const buffer = base64ToArrayBuffer(saved.fragmentData)
+          const result = await loadFragmentBytes(new Uint8Array(buffer), saved.name)
+          const id = this.addIFCModel(result, saved.name)
+          const obj = this.objects.get(id)
+          obj.mesh.position.fromArray(saved.position)
+          obj.mesh.rotation.set(saved.rotation[0], saved.rotation[1], saved.rotation[2], saved.rotation[3])
+          obj.mesh.scale.fromArray(saved.scale)
+        }
 
-      if (saved.type === 'glb' && saved.fileData) {
-        const buffer = base64ToArrayBuffer(saved.fileData)
-        const blob = new Blob([buffer])
-        const file = new File([blob], saved.name)
-        const id = await this.loadGLB(file)
-        const obj = this.objects.get(id)
-        obj.mesh.position.fromArray(saved.position)
-        obj.mesh.rotation.set(saved.rotation[0], saved.rotation[1], saved.rotation[2], saved.rotation[3])
-        obj.mesh.scale.fromArray(saved.scale)
+        if (saved.type === 'glb' && saved.fileData) {
+          const buffer = base64ToArrayBuffer(saved.fileData)
+          const blob = new Blob([buffer])
+          const file = new File([blob], saved.name)
+          const id = await this.loadGLB(file)
+          const obj = this.objects.get(id)
+          obj.mesh.position.fromArray(saved.position)
+          obj.mesh.rotation.set(saved.rotation[0], saved.rotation[1], saved.rotation[2], saved.rotation[3])
+          obj.mesh.scale.fromArray(saved.scale)
+        }
       }
+    } catch (error) {
+      console.error(error)
+      throw error
     }
   }
 
   //clear all resource
   destroy() {
-    cancelAnimationFrame(this._animId)
-    this._resizeObs?.disconnect()
-    window.removeEventListener('keydown', this._onKey)
-    this.renderer.dispose()
-    this.orbitControls.dispose()
-    this.transformControls.dispose()
+    try {
+      cancelAnimationFrame(this._animId)
+      this._resizeObs?.disconnect()
+      window.removeEventListener('keydown', this._onKey)
+      this.renderer.dispose()
+      this.orbitControls.dispose()
+      this.transformControls.dispose()
+    } catch (error) {
+      console.error(error)
+    }
   }
 }
 
