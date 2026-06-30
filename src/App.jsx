@@ -7,25 +7,24 @@ import LoadingOverlay from './components/LoadingOverlay.jsx'
 import DropZone from './components/DropZone.jsx'
 import { useToast, ToastContainer } from './components/Toast.jsx'
 
-// App 是整個 BIM 檢視器的主入口，負責串接 3D 場景與使用者操作。
+
 export default function App() {
-  // 用來取得畫布與各種隱藏檔案輸入元件，避免重新渲染後丟失引用。
   const canvasRef = useRef(null)
   const sceneRef = useRef(null)
   const ifcInputRef = useRef(null)
   const glbInputRef = useRef(null)
   const projectInputRef = useRef(null)
 
-  // 用 Map 儲存場景中的物件，方便依 ID 做新增、選取與刪除。
   const [objects, setObjects] = useState(new Map())
   const [selectedId, setSelectedId] = useState(null)
   const [transformMode, setTransformMode] = useState('translate')
   const [loading, setLoading] = useState(null) // { message, progress }
   const { toasts, toast } = useToast()
 
-  // 把場景內的物件資料同步到 React 狀態，讓右側面板可以即時更新。
+  
   const syncObjects = useCallback(() => {
     if (!sceneRef.current) return
+    //sceneRef.current.objects = SceneManager.object
     setObjects(new Map(sceneRef.current.objects))
   }, [])
 
@@ -33,6 +32,7 @@ export default function App() {
   useEffect(() => {
     if (!canvasRef.current || sceneRef.current) return
     const sm = new SceneManager(canvasRef.current)
+    //sm.on_select = lambda id: set_selected_id(id) in py
     sm.onSelect = (id) => setSelectedId(id)
     sm.onDeselect = () => setSelectedId(null)
     sceneRef.current = sm

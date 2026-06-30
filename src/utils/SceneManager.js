@@ -2,6 +2,7 @@
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { getFragments } from './ifcLoader.js'
 
 export class SceneManager {
   constructor(canvas) {
@@ -105,6 +106,22 @@ export class SceneManager {
 
     this.transformControls.addEventListener('mouseDown', () => { this._isDraggingTransform = true })
     this.transformControls.addEventListener('mouseUp', () => { this._isDraggingTransform = false })
+    this.transformControls.addEventListener('dragging-changed', (e) => {
+    this.orbitControls.enabled = !e.value
+      if (!e.value) {
+        const frags = getFragments()
+        frags.update(true)
+      }
+    })
+    this.transformControls.addEventListener('objectChange', () => {
+      if (this._updateScheduled) return
+      this._updateScheduled = true
+      requestAnimationFrame(() => {
+        const frags = getFragments()
+        frags.update(true)
+        this._updateScheduled = false
+      })
+    })
 
     this.renderer.domElement.addEventListener('click', (e) => {
       if (this._isDraggingTransform) return
@@ -176,59 +193,59 @@ export class SceneManager {
   }
 
 
-  _handleClick(e) {
-      const rect = this.renderer.domElement.getBoundingClientRect()
-      this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1
-      this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1
+  async _handleClick(e) {
+    const rect = this.renderer.domElement.getBoundingClientRect()
+    this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1
+    this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1
+    this.raycaster.setFromCamera(this.mouse, this.camera)
 
-      this.raycaster.setFromCamera(this.mouse, this.camera)
+    let bestId = null
+    let bestDist = Infinity
 
-      // IFC 用自己的 raycast
-      for (const [id, obj] of this.objects.entries()) {
-        if (obj.type === 'ifc' && obj.model) {
-          const result = obj.model.raycast(this.raycaster)
-          if (result) {
-            this.selectById(id)
-            return
-          }
+    // IFC 用自己的 raycast
+    for (const [id, obj] of this.objects.entries()) {
+      if (obj.type === 'ifc' && obj.model) {
+        const result = await obj.model.raycast({
+          mouse: new THREE.Vector2(e.clientX, e.clientY),
+          dom: this.renderer.domElement,
+          camera: this.camera
+        })
+        if (result && result.distance < bestDist) {
+          bestDist = result.distance
+          bestId = id
         }
       }
+    }
 
-      // GLB 用原本的 raycaster
-      const meshes = [...this.objects.values()].map(o => o.mesh)
-      const allMeshes = []
-      meshes.forEach(m => m.traverse(c => {
+    // GLB 用 Three.js 原生 raycaster，只收 GLB 的 mesh
+    const allMeshes = []
+    for (const [id, obj] of this.objects.entries()) {
+      if (obj.type !== 'glb') continue
+      obj.mesh.traverse(c => {
         if (c && c.type === 'Mesh') allMeshes.push(c)
-      }))
+      })
+    }
 
-      let hits = []
-      try { hits = this.raycaster.intersectObjects(allMeshes, false) } catch(e) { return }
-      if (hits.length === 0) { this.deselect(); return }
+    let hits = []
+    try { hits = this.raycaster.intersectObjects(allMeshes, false) } catch (e) { hits = [] }
 
+    if (hits.length > 0 && hits[0].distance < bestDist) {
       let target = hits[0].object
       let found = null
       while (target) {
         const id = this._getIdByMesh(target)
-        if (id) { found = { id, mesh: target }; break }
+        if (id) { found = id; break }
         target = target.parent
       }
-      if (!found) {
-        target = hits[0].object
-        while (target) {
-          for (const [id, obj] of this.objects.entries()) {
-            if (obj.mesh === target || obj.mesh.getObjectById(target.id)) {
-              found = { id, mesh: obj.mesh }; break
-            }
-          }
-          if (found) break
-          target = target.parent
-        }
+      if (found) {
+        bestId = found
+        bestDist = hits[0].distance
       }
+    }
 
-      if (found) this.selectById(found.id)
-      else this.deselect()
+    if (bestId) this.selectById(bestId)
+    else this.deselect()
   }
-
   _getIdByMesh(mesh) {
     for (const [id, obj] of this.objects.entries()) {
       if (obj.mesh === mesh) return id
@@ -279,6 +296,7 @@ export class SceneManager {
   // === IFC ===
   addIFCModel({ object, model }, filename) {
       const id = `ifc_${Date.now()}`
+      model.useCamera(this.camera)
       this.scene.add(object)
       this.objects.set(id, { mesh: object, model, type: 'ifc', name: filename })
       return id
@@ -414,6 +432,10 @@ export class SceneManager {
     this.transformControls.dispose()
   }
 }
+
+
+
+
 
 
 

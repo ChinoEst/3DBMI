@@ -3,7 +3,7 @@ import * as THREE from 'three'
 
 let fragments = null
 
-function getFragments() {
+export function getFragments() {
   if (fragments) return fragments
   /*
   初始化 FragmentsModels 實例 
@@ -59,3 +59,4 @@ export async function loadIFCFile(file, onProgress) {
   model.object.name = file.name
   return { object: model.object, model }
 }
+
