@@ -473,6 +473,16 @@ export class SceneManager {
     }
   }
 
+
+  toggleVisible(id) {
+    try {
+      const obj = this.objects.get(id)
+      if (!obj) return
+      obj.mesh.visible = !obj.mesh.visible
+    } catch (error) {
+      console.error(error)
+    }
+  }
   
   addIFCModel({ object, model, fragmentBytes }, filename) {
     try {

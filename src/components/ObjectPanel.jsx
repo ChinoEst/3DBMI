@@ -98,7 +98,7 @@ const s = {
 }
 
 
-export default function ObjectPanel({ objects, selectedId, onSelect }) {
+export default function ObjectPanel({ objects, selectedId, onSelect, onToggleVisible }) {
   //map to dict, filter by type, render list
   const ifcObjs = [...objects.entries()].filter(([, o]) => o.type === 'ifc')
   const glbObjs = [...objects.entries()].filter(([, o]) => o.type === 'glb')
@@ -107,6 +107,7 @@ export default function ObjectPanel({ objects, selectedId, onSelect }) {
   const renderItem = ([id, obj]) => {
     const isActive = id === selectedId
     const icon = obj.type === 'ifc' ? '🏗' : '🧊'
+    const isVisible = obj.mesh.visible !== false
     return (
       <div
         key={id}
@@ -118,6 +119,13 @@ export default function ObjectPanel({ objects, selectedId, onSelect }) {
         <span style={s.icon}>{icon}</span>
         <span style={s.name} title={obj.name}>{obj.name}</span>
         <span style={s.badge}>{obj.type.toUpperCase()}</span>
+        <span
+          style={{ ...s.icon, cursor: 'pointer', opacity: isVisible ? 1 : 0.4 }}
+          onClick={(e) => { e.stopPropagation(); onToggleVisible(id) }}
+          title={isVisible ? '隱藏' : '顯示'}
+        >
+          {isVisible ? '👁' : '🚫'}
+        </span>
       </div>
     )
   }
