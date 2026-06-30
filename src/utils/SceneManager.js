@@ -416,6 +416,10 @@ export class SceneManager {
       })
 
       console.log('selectById:', id, obj.mesh)
+      if (this._highlightMaterial) {
+        this._highlightMaterial.opacity = obj.opacity ?? 1
+        this._highlightMaterial.transparent = (obj.opacity ?? 1) < 1
+      }
       //transformControls follow  obj.mesh 
       this.transformControls.attach(obj.mesh)
       if (this.onSelect) this.onSelect(id, obj)
@@ -483,13 +487,42 @@ export class SceneManager {
       console.error(error)
     }
   }
+
+  _applyOpacityToMaterials(object, value) {
+    object.traverse(child => {
+      if (!child.material) return
+      const materials = Array.isArray(child.material) ? child.material : [child.material]
+      materials.forEach(material => {
+        if (!material || typeof material.opacity !== 'number') return
+        material.opacity = value
+        material.transparent = value < 1
+        material.needsUpdate = true
+      })
+    })
+  }
+
+  setObjectOpacity(id, opacity) {
+    try {
+      const obj = this.objects.get(id)
+      if (!obj) return
+      const value = Math.min(1, Math.max(0, Number(opacity) ?? 1))
+      obj.opacity = value
+      this._applyOpacityToMaterials(obj.mesh, value)
+      if (this.selectedObject === obj.mesh && this._highlightMaterial) {
+        this._highlightMaterial.opacity = value
+        this._highlightMaterial.transparent = value < 1
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
   
   addIFCModel({ object, model, fragmentBytes }, filename) {
     try {
       const id = `ifc_${Date.now()}`
       model.useCamera(this.camera)
       this.scene.add(object)
-      this.objects.set(id, { mesh: object, model, fragmentBytes, type: 'ifc', name: filename })
+      this.objects.set(id, { mesh: object, model, fragmentBytes, type: 'ifc', name: filename, opacity: 1 })
       return id
     } catch (error) {
       console.error(error)
@@ -523,7 +556,7 @@ export class SceneManager {
             model.position.y = 0
 
             this.scene.add(model)
-            this.objects.set(id, { mesh: model, fileBuffer, type: 'glb', name: file.name })
+            this.objects.set(id, { mesh: model, fileBuffer, type: 'glb', name: file.name, opacity: 1 })
             resolve(id)
           } catch (error) {
             console.error(error)
@@ -622,7 +655,8 @@ export class SceneManager {
           name: obj.name,
           position: m.position.toArray(),
           rotation: [m.rotation.x, m.rotation.y, m.rotation.z, m.rotation.order],
-          scale: m.scale.toArray()
+          scale: m.scale.toArray(),
+          opacity: obj.opacity ?? 1
         }
         
         if (obj.type === 'ifc' && obj.fragmentBytes) {
@@ -655,6 +689,7 @@ export class SceneManager {
           obj.mesh.position.fromArray(saved.position)
           obj.mesh.rotation.set(saved.rotation[0], saved.rotation[1], saved.rotation[2], saved.rotation[3])
           obj.mesh.scale.fromArray(saved.scale)
+          if (saved.opacity !== undefined) this.setObjectOpacity(id, saved.opacity)
         }
 
         if (saved.type === 'glb' && saved.fileData) {
@@ -666,6 +701,7 @@ export class SceneManager {
           obj.mesh.position.fromArray(saved.position)
           obj.mesh.rotation.set(saved.rotation[0], saved.rotation[1], saved.rotation[2], saved.rotation[3])
           obj.mesh.scale.fromArray(saved.scale)
+          if (saved.opacity !== undefined) this.setObjectOpacity(id, saved.opacity)
         }
       }
     } catch (error) {

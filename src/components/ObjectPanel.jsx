@@ -94,11 +94,28 @@ const s = {
     fontSize: 10,
     color: 'var(--text-secondary)',
     fontFamily: 'monospace'
+  },
+  opacityRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+    paddingLeft: 22
+  },
+  slider: {
+    flex: 1,
+    accentColor: 'var(--accent)'
+  },
+  opacityValue: {
+    fontSize: 10,
+    color: 'var(--text-muted)',
+    minWidth: 30,
+    textAlign: 'right'
   }
 }
 
 
-export default function ObjectPanel({ objects, selectedId, onSelect, onToggleVisible }) {
+export default function ObjectPanel({ objects, selectedId, onSelect, onToggleVisible, onSetOpacity }) {
   //map to dict, filter by type, render list
   const ifcObjs = [...objects.entries()].filter(([, o]) => o.type === 'ifc')
   const glbObjs = [...objects.entries()].filter(([, o]) => o.type === 'glb')
@@ -108,6 +125,7 @@ export default function ObjectPanel({ objects, selectedId, onSelect, onToggleVis
     const isActive = id === selectedId
     const icon = obj.type === 'ifc' ? '🏗' : '🧊'
     const isVisible = obj.mesh.visible !== false
+    const opacity = obj.opacity ?? 1
     return (
       <div
         key={id}
@@ -126,6 +144,19 @@ export default function ObjectPanel({ objects, selectedId, onSelect, onToggleVis
         >
           {isVisible ? '👁' : '🚫'}
         </span>
+        <div style={s.opacityRow} onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.05"
+            value={opacity}
+            onChange={(e) => onSetOpacity(id, Number(e.target.value))}
+            style={s.slider}
+            title={`透明度 ${Math.round(opacity * 100)}%`}
+          />
+          <span style={s.opacityValue}>{Math.round(opacity * 100)}%</span>
+        </div>
       </div>
     )
   }

@@ -221,6 +221,11 @@ export default function App() {
     syncObjects()
   }
 
+  const handleSetOpacity = (id, opacity) => {
+    sceneRef.current?.setObjectOpacity(id, opacity)
+    syncObjects()
+  }
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
       {/* Canvas */}
@@ -249,6 +254,7 @@ export default function App() {
         selectedId={selectedId}
         onSelect={handlePanelSelect}
         onToggleVisible={handleToggleVisible}
+        onSetOpacity={handleSetOpacity}
       />
 
       {/* Drop zone */}
