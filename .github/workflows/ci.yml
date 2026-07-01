@@ -34,7 +34,7 @@ jobs:
           fi
  
       - name: Run unit tests
-        run: npx vitest run --exclude tests/e2e/**
+        run: npm exec vitest run --exclude tests/e2e/**
  
       - name: Build
         run: npm run build
@@ -60,7 +60,7 @@ jobs:
         run: npx playwright install --with-deps chromium
  
       - name: Run E2E tests
-        run: npx playwright test --reporter=dot,junit,html
+        run: npm exec playwright test --reporter=dot,junit,html
  
       - name: Upload Playwright HTML report
         if: always()
