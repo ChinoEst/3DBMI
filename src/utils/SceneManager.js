@@ -492,7 +492,7 @@ export class SceneManager {
         material.transparent = value < 1
         material.needsUpdate = true
       })
-    })
+    }) 
   }
 
   setObjectOpacity(id, opacity) {
