@@ -13,6 +13,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Use npm 11
+        run: |
+          corepack enable
+          corepack prepare npm@11.12.1 --activate
       - name: Cache node modules
         uses: actions/cache@v4
         with:
@@ -34,6 +38,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Use npm 11
+        run: |
+          corepack enable
+          corepack prepare npm@11.12.1 --activate
       - name: Install dependencies
         run: npm ci
       - name: Install Playwright browsers
