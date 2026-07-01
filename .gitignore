@@ -26,5 +26,11 @@ Thumbs.db
 playwright-report/
 test-results/
 
+tests/e2e/debug_dom.js
+tests/e2e/debug_dom.png
+
+
+overlay.log
+
 # Cache
 .cache/

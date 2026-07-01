@@ -73,13 +73,14 @@ describe('Issue #2: public/worker.mjs 必須存在', () => {
 })
 
 
-// Additional tests for edge cases
+
 describe('Additional logic edge cases', () => {
-   
+  // Test pickClosest with equal distancesㄝ, ifc should be preferred
   it('pickClosest prefers IFC when distances are equal', () => {
     expect(pickClosest({ id: 'ifc', distance: 5 }, { id: 'glb', distance: 5 })).toBe('ifc')
   })
 
+  // Test removeObject with an object that has no type 
   it('removeObject treats ifc without model as non-ifc and calls scene.remove', () => {
     const frags = { disposeModel: vi.fn() }
     const scene = { remove: vi.fn() }
@@ -91,6 +92,7 @@ describe('Additional logic edge cases', () => {
     expect(frags.disposeModel).not.toHaveBeenCalled()
   })
 
+  // Test arrayBufferToBase64 and base64ToArrayBuffer with odd-length buffers
   it('arrayBuffer/base64 round-trip works for odd-length buffers', () => {
     const original = new Uint8Array([10, 20, 30]).buffer
     const restored = base64ToArrayBuffer(arrayBufferToBase64(original))

@@ -5,13 +5,14 @@ export default defineConfig({
   testDir: 'tests/e2e',
   timeout: 30000,
   use: {
+    launchOptions: {slowMo: 500,},
     headless: true,
     baseURL: 'http://localhost:5173',
     viewport: { width: 1280, height: 720 },
     actionTimeout: 5000,
-    trace: 'retain-on-failure',
+    trace: 'on',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: 'on',
   },
   webServer: {
     command: 'npm run dev',

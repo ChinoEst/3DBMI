@@ -186,6 +186,7 @@ export default function ObjectPanel({ objects, selectedId, onSelect, onToggleVis
     return (
       <div
         key={id}
+        data-testid="object-item"
         style={{ ...s.item, ...(isActive ? s.itemActive : {}) }}
         onClick={() => onSelect(id)}
         onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--bg-panel-hover)' }}
