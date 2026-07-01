@@ -308,6 +308,19 @@ export class SceneManager {
     //when keydown, do this._onKey and parameter is e for keyboard reaction
     window.addEventListener('keydown', this._onKey)
     window.addEventListener('keyup', this._onKeyUp)
+
+
+    if (typeof window !== 'undefined') {
+      window.__getObjectTransform = (id) => {
+        const obj = this.objects.get(id)
+        if (!obj || !obj.mesh) return null
+        return {
+          position: obj.mesh.position.toArray(),
+          rotation: [obj.mesh.rotation.x, obj.mesh.rotation.y, obj.mesh.rotation.z],
+          scale: obj.mesh.scale.toArray()
+        }
+      }
+    }
   }
 
 

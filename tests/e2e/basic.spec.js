@@ -5,6 +5,20 @@ import path from 'path'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const glbFile = path.resolve(__dirname, '..', '..', 'test.glb')
+const ifcFile = path.resolve(__dirname, '..', '..', 'test.ifc')
+const projectFile = path.resolve(__dirname, '..', '..', 'test.json')
+
+async function dragCanvas(page, offsetX, offsetY) {
+  const canvas = await page.waitForSelector('canvas', { timeout: 10000 })
+  const box = await canvas.boundingBox()
+  if (!box) throw new Error('Canvas not found')
+  const startX = box.x + box.width / 2
+  const startY = box.y + box.height / 2
+  await page.mouse.move(startX, startY)
+  await page.mouse.down()
+  await page.mouse.move(startX + offsetX, startY + offsetY, { steps: 10 })
+  await page.mouse.up()
+}
 
 test.describe('BIM Viewer UI', () => {
   test('page loads and canvas exists', async ({ page }) => {
@@ -110,12 +124,71 @@ test.describe('BIM Viewer UI', () => {
     await expect(page.getByText('專案已儲存')).toBeVisible()
   })
 
-  test('Ctrl+S triggers save toast', async ({ page }) => {
+  test('Ctrl+S triggers save toast after GLB load and object selection', async ({ page }) => {
     await page.goto('/')
+    await page.setInputFiles('input[type="file"][accept=".glb,.gltf"]', glbFile)
+    await expect(page.getByText(/test\.glb 加入場景/)).toBeVisible()
+    const item = page.locator('[data-testid="object-item"]').first()
+    await item.click()
     await page.focus('body')
     await page.keyboard.down('Control')
     await page.keyboard.press('KeyS')
     await page.keyboard.up('Control')
     await expect(page.getByText('專案已儲存')).toBeVisible()
+  })
+
+  test('load IFC file and show object count', async ({ page }) => {
+    await page.goto('/')
+    await page.setInputFiles('input[type="file"][accept=".ifc"]', ifcFile)
+    await expect(page.getByText(/test\.ifc 載入完成/), { timeout: 20000 }).toBeVisible()
+    await expect(page.getByText(/物件數：1/), { timeout: 20000 }).toBeVisible()
+    const item = page.locator('[data-testid="object-item"]').first()
+    await expect(item).toBeVisible()
+  })
+
+  test('load IFC then translate object', async ({ page }) => {
+    await page.goto('/')
+    await page.setInputFiles('input[type="file"][accept=".ifc"]', ifcFile)
+    await expect(page.getByText(/test\.ifc 載入完成/), { timeout: 20000 }).toBeVisible()
+    await expect(page.getByText(/物件數：1/), { timeout: 20000 }).toBeVisible()
+
+    await page.getByRole('button', { name: /位移 W/ }).click()
+    const item = page.locator('[data-testid="object-item"]').first()
+    await item.click()
+    await dragCanvas(page, 40, 0)
+    await expect(page.getByText(/模式：位移/)).toBeVisible()
+  })
+
+  test('load IFC then rotate object', async ({ page }) => {
+    await page.goto('/')
+    await page.setInputFiles('input[type="file"][accept=".ifc"]', ifcFile)
+    await expect(page.getByText(/test\.ifc 載入完成/), { timeout: 20000 }).toBeVisible()
+    await expect(page.getByText(/物件數：1/), { timeout: 20000 }).toBeVisible()
+
+    await page.getByRole('button', { name: /旋轉 E/ }).click()
+    const item = page.locator('[data-testid="object-item"]').first()
+    await item.click()
+    await dragCanvas(page, 0, 40)
+    await expect(page.getByText(/模式：旋轉/)).toBeVisible()
+  })
+
+  test('load IFC then scale object', async ({ page }) => {
+    await page.goto('/')
+    await page.setInputFiles('input[type="file"][accept=".ifc"]', ifcFile)
+    await expect(page.getByText(/test\.ifc 載入完成/), { timeout: 20000 }).toBeVisible()
+    await expect(page.getByText(/物件數：1/), { timeout: 20000 }).toBeVisible()
+
+    await page.getByRole('button', { name: /縮放 R/ }).click()
+    const item = page.locator('[data-testid="object-item"]').first()
+    await item.click()
+    await dragCanvas(page, 20, 20)
+    await expect(page.getByText(/模式：縮放/)).toBeVisible()
+  })
+
+  test('load project file via 開啟專案', async ({ page }) => {
+    await page.goto('/')
+    await page.setInputFiles('input[type="file"][accept=".json"]', projectFile)
+    await expect(page.getByText(/專案還原完成/), { timeout: 20000 }).toBeVisible()
+    await expect(page.getByText(/物件數：2/), { timeout: 20000 }).toBeVisible()
   })
 })

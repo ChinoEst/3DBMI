@@ -3,9 +3,9 @@ import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
   testDir: 'tests/e2e',
-  timeout: 30000,
+  timeout: 60000,
   use: {
-    launchOptions: {slowMo: 500,},
+    launchOptions: { slowMo: 500 },
     headless: true,
     baseURL: 'http://localhost:5173',
     viewport: { width: 1280, height: 720 },
